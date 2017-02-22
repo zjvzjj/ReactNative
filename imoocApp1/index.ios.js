@@ -64,6 +64,7 @@ _renderContent: function(color: string, pageText: string, num?: number) {
         <Icon.TabBarItem
           title="Blue Tab"
           iconName='ios-videocam-outline'
+          selectedIconName='ios-videocam'
           selected={this.state.selectedTab === 'list'}
           onPress={() => {
             this.setState({
@@ -73,7 +74,9 @@ _renderContent: function(color: string, pageText: string, num?: number) {
           <List />
         </Icon.TabBarItem>
         <Icon.TabBarItem
-          systemIcon="history"
+           iconName='ios-recording-outline'
+          selectedIconName='ios-recording'
+                    title="编辑"
           badge={this.state.notifCount > 0 ? this.state.notifCount : undefined}
           selected={this.state.selectedTab === 'edit'}
           onPress={() => {
@@ -85,8 +88,8 @@ _renderContent: function(color: string, pageText: string, num?: number) {
           <Edit />
         </Icon.TabBarItem>
         <Icon.TabBarItem
-          icon={require('./flux.png')}
-          selectedIcon={require('./flux.png')}
+         iconName='ios-more-outline'
+          selectedIconName='ios-more'
           renderAsOriginal
           title="More"
           selected={this.state.selectedTab === 'account'}
