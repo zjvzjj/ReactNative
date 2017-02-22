@@ -64,6 +64,7 @@ var List = React.createClass({
     />
    </Image>
 
+
     <View style={styles.itemFooter}>
     <View style={styles.handleBox}>
     <Icon name='ios-heart-outline'
@@ -85,8 +86,10 @@ var List = React.createClass({
   </TouchableHighlight>
 )
 },
+
 render: function() {
-return ( <View style = {styles.container}>
+return ( 
+  <View style = {styles.container}>
   <View style = {styles.header}>
   <Text style = {styles.headerTitle}>列表页面</Text>
   </View>
@@ -97,6 +100,8 @@ return ( <View style = {styles.container}>
     this.renderRow
   }
   enableEmptySections = {true}
+    automaticallyAdjustContentInsets = {false}
+
   /> 
   </View>
 )
@@ -136,7 +141,6 @@ var styles = StyleSheet.create({
     fontSize: 18,
     color: '#333'
   },
-
 
   itemFooter: {
     flexDirection: 'row',
