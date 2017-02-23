@@ -10,6 +10,9 @@ import React, {
 } from 'react'
 import Dimensions from 'Dimensions'
 import Icon from 'react-native-vector-icons/Ionicons'
+var request = require('../common/request')
+var config = require('../common/config')
+
 import {
 
   StyleSheet,
@@ -35,15 +38,7 @@ var List = React.createClass({
       });
 
       return {
-        dataSource: ds.cloneWithRows([{
-          "_id": "620000198503211187",
-          "thumb": "http://dummyimage.com/1200x600/60d2bc)",
-          "video": "http://v2.mukewang.com/6ae55890-3157-4b72-b2ac-3abb0bc6969f/L.mp4?auth_key=1478593262-0-0-2ddaa5876432f784a04f87cff2f19791"
-        }, {
-          "_id": "410000198406246397",
-          "thumb": "http://dummyimage.com/1200x600/6e623d)",
-          "video": "http://v2.mukewang.com/6ae55890-3157-4b72-b2ac-3abb0bc6969f/L.mp4?auth_key=1478593262-0-0-2ddaa5876432f784a04f87cff2f19791"
-        }]),
+        dataSource: ds.cloneWithRows([]),
       }
     },
 
@@ -51,7 +46,7 @@ var List = React.createClass({
       return (
         <TouchableHighlight>
           <View style = {styles.item}>
-        <Text style = {styles.title}>{row._id}</Text>
+        <Text style = {styles.title}>{row.title}</Text>
 
     <Image
         source={{uri:row.thumb}}
@@ -87,6 +82,27 @@ var List = React.createClass({
 )
 },
 
+componentDidMount:function(){
+this._fatchData()
+},
+
+_fatchData:function(){
+  request.get(config.api.base + config.api.creations, {
+    accessToken : 32
+    })
+  .then((data) => {
+    if(data.success){
+  
+  this.setState({
+    dataSource:this.state.dataSource.cloneWithRows(data.data)
+  })
+}
+    console.log(data)
+  })
+  .catch((error) => {
+    console.log('error1 ' + error)
+  })
+},
 render: function() {
 return ( 
   <View style = {styles.container}>
@@ -132,7 +148,7 @@ var styles = StyleSheet.create({
   },
   thumb: {
     width: width,
-    height: width * 0.5,
+    height: width * 0.56,
     resizeMode: 'cover'
 
   },
