@@ -20,7 +20,8 @@ import {
     View,
     ListView,
     TouchableHighlight,
-    Image
+    Image,
+    Alert
 
 
 } from 'react-native'
@@ -131,9 +132,40 @@ var List = React.createClass({
                                         },
 
                                         componentDidMount: function () {
-                                        this._fatchData()
+                                        // this._fatchData()
+                                        this._testData()
                                     },
 
+                                        _testData: function (){
+                                        request.post(config.BD.base + config.BD.clubIndex, {
+                                            uid: '530160901140737z55'
+                                        })
+                                            .then((data) => {
+                                                {/*console.log(data.data.description)*/
+                                                }
+                                                {/*console.log(config.BD.base + config.BD.creations)*/}
+                                                {/*console.log(data.data)*/
+                                                }
+                                                {/*console.log("fetch request ", data.data.clubMenu[0].thumb);*/}
+                                                data.json().then(function (json) {
+                                                    console.info(json);
+
+                                                    var str = json.data.description
+                                                    console.log('11' + str)
+                                                    var str1 = str.replace(/"([^"]|;)"/ig, "\n")
+                                                    console.log('22' + str1)
+                                                    Alert.alert(
+                                                        '有版本更新',
+
+                                                        json.data.description,
+                                                        [
+                                                            {text: '取消', onPress: () => console.log('Cancel Pressed!')},
+                                                            {text: '确定', onPress: () => console.log('OK Pressed!')},
+                                                        ]
+                                                    )
+                                                });
+                                            })
+                                    },
                                         _fatchData: function () {
                                         request.get(config.api.base + config.api.creations, {
                                             accessToken: 32
@@ -147,6 +179,7 @@ var List = React.createClass({
                                                     })
                                                 }
                                                 console.log(data)
+                                                console.log(data.data[0].thumb)
                                             })
                                             .catch((error) => {
                                                 console.log('error1 ' + error)
