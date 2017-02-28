@@ -15,14 +15,15 @@ request.get = function (url, params) {
     return fetch(url)
         .then((response) => response.json()
         )
-        // .then((response) => Mock.mock(response)
-        // )
+         .then((response) => Mock.mock(response)
+         )
 
 }
 
 
 request.post = function (url, body) {
     console.log(url)
+    console.log(body)
     var options = _.extend(config.header, {
         body: JSON.stringify(body)
     })
@@ -31,7 +32,7 @@ request.post = function (url, body) {
         console.log('333')
         .then((response) => response.json()
         )
-        // .then((response) => Mock.mock(response)
+       // .then((response) => Mock.mock(response)
         // )
 }
 

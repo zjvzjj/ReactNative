@@ -21,32 +21,69 @@ import {
     ListView,
     TouchableHighlight,
     Image,
-    Alert
+    Alert,
+    ActivityIndicator,
+    RefreshControl,
+    AlertIOS
 
 
 } from 'react-native'
 
 // var Dimensions = React.Dimensions
 
+var cachedResults = {
+    nextPage : 1,
+    items: [],
+    total: 0
+}
 
 var width = Dimensions.get('window').width
 
-var List = React.createClass({
-
-    getInitialState() {
-        var ds = new ListView.DataSource({
-                rowHasChanged: (r1, r2) => r1 !== r2
-            })
-            ;
-
-        return {
-            dataSource: ds.cloneWithRows([]),
+var Item = React.createClass({
+    getInitialState (){
+        var row = this.props.row
+        return{
+            up:row.voted,
+            row :row
         }
     },
+    _up(){
+        var that = this
+        var up = !this.state.up
+        var row = this.state.row
+        var url = config.api.base + config.api.up
 
-    renderRow: function (row) {
-        return (
-            < TouchableHighlight >
+        var body = {
+            id:row._id,
+            up:up? 'yes' : 'no',
+            accessToken : 'abcee'
+        }
+
+        request.post(url,body)
+        .then(function(data){
+            console.log(data.success)
+            data.json().then(function (json) {
+                            console.log(data.success)
+
+                            });
+            if(data && data.success){
+                that.setState({
+                    up : up
+                })
+            }else{
+                AlertIOS.alert('点赞失败，请重试')
+            }
+         
+        })
+           .catch(function(err){
+                console.log('err')
+            })
+    },
+render(){
+    var row = this.state.row
+
+    return(
+        < TouchableHighlight >
                 < View
                     style={styles.item
                     }>
@@ -89,15 +126,16 @@ var List = React.createClass({
                             }>
                             <
                                 Icon
-                                name='ios-heart-outline'
+                                name= {this.state.up ? 'ios-heart' : 'ios-heart-outline'}
                                 size={28}
-                                style={styles.up
+                                onPress = {this._up}
+                                style={[styles.up,  this.state.up ? null : styles.down]
                                 }
                             />
                             <
                                 Text
                                 style={styles.handleText
-                                }>
+                                } onPress = {this._up}>
                                 喜欢
                                 <
                                 / Text >
@@ -129,11 +167,32 @@ var List = React.createClass({
                                         <
                                         / TouchableHighlight >
                                         )
+}
+})
+var List = React.createClass({
+
+    getInitialState() {
+        var ds = new ListView.DataSource({
+                rowHasChanged: (r1, r2) => r1 !== r2
+            })
+            ;
+
+        return {
+isRefreshing:false,
+            isLoadingTail:false,
+            dataSource: ds.cloneWithRows([]),
+        }
+    },
+
+    _renderRow: function (row) {
+      
+        return <Item row = {row} /> 
+            
                                         },
 
                                         componentDidMount: function () {
-                                        // this._fatchData()
-                                        this._testData()
+                                        this._fatchData(1)
+                                        //this._testData()
                                     },
 
                                         _testData: function (){
@@ -166,24 +225,118 @@ var List = React.createClass({
                                                 });
                                             })
                                     },
-                                        _fatchData: function () {
+                                        _fatchData(page) {
+                                            var that = this
+                                            if (page !== 0) {
+                                                this.setState({
+                                                isLoadingTail: true
+                                            })  
+                                        }else{
+                                                this.setState({
+                                                isRefreshing: true
+                                            }) 
+
+                                        }
+
+                                          
+
                                         request.get(config.api.base + config.api.creations, {
-                                            accessToken: 32
+                                            accessToken: 32,
+                                            page: page
                                         })
                                             .then((data) => {
+
                                                 if (data.success
                                                 ) {
+                                                    var items = cachedResults.items.slice()
+                                                    if (page !==0 ) {
+                                                cachedResults.nextPage += 1
+                                                        items = items.concat(data.data)
+                                                    }else{
+                                                        items = data.data.concat(items)
+                                                    }
 
-                                                    this.setState({
-                                                        dataSource: this.state.dataSource.cloneWithRows(data.data)
+                                                   
+                                                    items = items.concat(data.data)
+                                                    cachedResults.items = items;
+                                                    cachedResults.total = data.total
+                                                    setTimeout(function(){
+                                                        if(page !== 0){
+                                                         that.setState({
+                                                        
+                                                        
+                                                        isLoadingTail : false,
+                                                        dataSource: that.state.dataSource.cloneWithRows(cachedResults.items)
                                                     })
+                                                }else{
+                                                      that.setState({
+                                                        
+                                                        
+                                                        isRefreshing : false,
+                                                        dataSource: that.state.dataSource.cloneWithRows(cachedResults.items)
+                                                    }) 
+                                                }
+
+                                                    },20)
+
+
+                                                   
                                                 }
                                                 console.log(data)
                                                 console.log(data.data[0].thumb)
                                             })
                                             .catch((error) => {
+                                              if(page !== 0){
+
+                                                this.setState({
+                                                    isLoadingTail : false
+                                                })
+                                            }else{
+                                                this.setState({
+                                                    isRefreshing : false
+                                                })
+                                            }
                                                 console.log('error1 ' + error)
+                                            
                                             })
+
+                                    },
+
+                                    _hasMore(){
+                                        return cachedResults.items.length !== cachedResults.total
+
+                                    },
+
+                                    _fetchMoreData(){
+                                        if(!this._hasMore() || this.state.isLoadingTail){
+return
+                                        }
+                                        var page = cachedResults.nextPage
+                                        this._fatchData(page)
+
+
+                                    },
+                                    _onRefresh(){
+                                        if(this._hasMore() || this.state.isRefreshing){
+                                            return
+                                        }
+                                        this.setState({
+                                            isRefreshing:true
+                                        })
+                                        this._fatchData(0)
+
+                                    },
+                                    _renderFooter(){
+                                        if(!this._hasMore() && cachedResults.total !== 0){
+                                            return(
+                                            <View style = {styles.loadingMore}><Text style = {styles.loadingText}>没有更多了</Text></View>
+                                            )
+                                        }
+                                        if(!this.state.isLoadingTail){
+                                            return <View style = {styles.loadingMore}  />
+                                        }
+                                        return  <ActivityIndicator style={styles.loadingMore} />
+
                                     },
                                         render: function () {
                                         return (
@@ -205,10 +358,23 @@ var List = React.createClass({
                                             this.state.dataSource
                                         }
                                         renderRow = {
-                                            this.renderRow
+                                            this._renderRow
                                         }
+                                        onEndReachedThreshold={20}
+                                        onEndReached={this._fetchMoreData}
                                         enableEmptySections = {true}
+                                        refreshControl={
+          <RefreshControl
+            refreshing={this.state.isRefreshing}
+            onRefresh={this._onRefresh}
+            tintColor="#ff6600"
+            title='拼命加载中。。。'
+
+          />
+        }
                                         automaticallyAdjustContentInsets = {false}
+                                        renderFooter={this._renderFooter}
+                                        showsVerticalScrollIndicator = {false}
 
                                         / >
                                         < / View >
@@ -285,11 +451,23 @@ var List = React.createClass({
                                     },
                                         up: {
                                         fontSize: 22,
+                                        color: '#ed7b66',
+                                    },
+                                    down: {
+                                        fontSize: 22,
                                         color: '#333',
                                     },
                                         commentIcon: {
                                         fontSize: 22,
                                         color: '#333'
+                                    },
+                                    loadingMore:{
+                                        marginVertical: 20
+
+                                    },
+                                    loadingText:{
+                                        color: '#777',
+                                        textAlign: 'center'
                                     }
                                     })
 
