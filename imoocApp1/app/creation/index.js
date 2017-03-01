@@ -77,96 +77,45 @@ var Item = React.createClass({
                 console.log('err')
             })
     },
-    render(){
-        var row = this.state.row
+    
+  render() {
+    var row = this.state.row
 
-        return (
-            < TouchableHighlight >
-                < View
-                    style={styles.item
-                    }>
-                    <
-                        Text
-                        style={styles.title
-                        }>
-                        {
-                            row.title
-                        }
-                    </
-                        Text >
-
-                    < Image
-                        source={
-                        {
-                            uri: row.thumb
-                        }
-                        }
-                        style={styles.thumb
-                        }
-                    >
-                        <
-                            Icon
-                            name='ios-play'
-                            size={28}
-                            style={styles.play
-                            }
-                        />
-                    </
-                        Image >
-
-
-                    < View
-                        style={styles.itemFooter
-                        }>
-                        <
-                            View
-                            style={styles.handleBox
-                            }>
-                            <
-                                Icon
-                                name={this.state.up ? 'ios-heart' : 'ios-heart-outline'}
-                                size={28}
-                                onPress={this._up}
-                                style={[styles.up, this.state.up ? null : styles.down]
-                                }
-                            />
-                            <
-                                Text
-                                style={styles.handleText
-                                } onPress={this._up}>
-                                喜欢
-                                <
-                                / Text >
-                                <
-                                / View >
-                                < View
-                                    style={styles.handleBox
-                                    }>
-                                    <
-                                        Icon
-                                        name='ios-pricetag-outline'
-                                        size={28}
-                                        style={styles.commentIcon
-                                        }
-                                    />
-                                    <
-                                        Text
-                                        style={styles.handleText
-                                        }>
-                                        评论
-                                        <
-                                        / Text >
-                                        <
-                                        / View >
-                                        <
-                                        / View >
-                                        <
-                                        / View >
-                                        <
-                                        / TouchableHighlight >
-                                        )
-                                        }
-                                        })
+    return (
+      <TouchableHighlight onPress={this.props.onSelect}>
+        <View style={styles.item}>
+          <Text style={styles.title}>{row.title}</Text>
+          <Image
+            // source={}
+            style={styles.thumb}
+          >
+            <Icon
+              name='ios-play'
+              size={28}
+              style={styles.play} />
+          </Image>
+          <View style={styles.itemFooter}>
+            <View style={styles.handleBox}>
+              <Icon
+                name={this.state.up ? 'ios-heart' : 'ios-heart-outline'}
+                size={28}
+                onPress={this._up}
+                style={[styles.up, this.state.up ? null : styles.down]} />
+              <Text style={styles.handleText} onPress={this._up}>喜欢</Text>
+            </View>
+            <View style={styles.handleBox}>
+              <Icon
+                name='ios-chatboxes-outline'
+                size={28}
+                style={styles.commentIcon} />
+              <Text style={styles.handleText}>评论</Text>
+            </View>
+          </View>
+        </View>
+      </TouchableHighlight>
+    )
+  }
+})
                                         var List = React.createClass({
 
                                         getInitialState() {
@@ -184,14 +133,14 @@ var Item = React.createClass({
 
                                         _renderRow: function (row) {
 
-                                        return <Item row = {row} />
+                                        return <Item key={row._id} row = {row} />
 
                                     },
+ componentDidMount() {
+    var that = this
 
-                                        componentDidMount: function () {
-                                        this._fatchData(1)
-                                        //this._testData()
-                                    },
+   that._fatchData(1)
+  },
 
                                         _testData: function (){
                                         request.post(config.BD.base + config.BD.clubIndex, {
@@ -228,108 +177,99 @@ var Item = React.createClass({
                                     },
                                         _fatchData(page) {
                                         var that = this
-                                        if (page !== 0) {
-                                        console.log('page=' + page)
-                                        this.setState({
-                                        isLoadingTail: true
-                                    })
-                                    }else{
-                                        console.log('123page=' + page)
-                                        this.setState({
-                                        isRefreshing: true
 
-                                    })
+    if (page !== 0) {
+      this.setState({
+        isLoadingTail: true
+      })
+    }
+    else {
+      this.setState({
+        isRefreshing: true
+      })
+    }
 
-                                    }
-                                        request.get(config.api.base + config.api.creations, {
-                                        accessToken: 32,
-                                        page: page
-                                    })
+                                    
+    request.get(config.api.base + config.api.creations, {
+      accessToken: 32,
+      page: page
+    })
 
 
                                         .then((data) => {
-                                        console.log('requestpage=' + page)
-                                        if (data.success
-                                        ) {
+        if (data && data.success) {
+         
 
-                                            var items = cachedResults.items.slice()
-                                        if (page !==0 ) {
-                                        cachedResults.nextPage += 1
-                                        items = items.concat(data.data)
-                                    }else{
-                                        items = data.data.concat(items)
-                                        console.log('items=' + data.data[0].title)
-                                    }
+            var items = cachedResults.items.slice()
 
-                                        cachedResults.items = items;
-                                        cachedResults.total = data.total
-                                        setTimeout(function(){
-                                        if(page !== 0){
-                                        console.log('page=' + page)
-                                        that.setState({
+            if (page !== 0) {
+              items = items.concat(data.data)
+              cachedResults.nextPage += 1
+            }
+            else {
+              items = data.data.concat(items)
+            }
 
+            cachedResults.items = items
+            cachedResults.total = data.total
 
-                                        isLoadingTail : false,
-                                        dataSource: that.state.dataSource.cloneWithRows(cachedResults.items)
-                                    })
-                                    }else{
-                                        console.log('123page=' + page)
-                                        that.setState({
-                                        isRefreshing : false,
-                                        dataSource: that.state.dataSource.cloneWithRows(data.data)
-                                    })
-                                    }
+            if (page !== 0) {
+              that.setState({
+                isLoadingTail: false,
+                dataSource: that.state.dataSource.cloneWithRows(cachedResults.items)
+              })
+            }
+            else {
+              that.setState({
+                isRefreshing: false,
+                dataSource: that.state.dataSource.cloneWithRows(cachedResults.items)
+              })
+            }
+          }
 
-                                    },20)
-                                    }
-                                        console.log(data)
-                                        console.log(data.data[0].thumb)
-                                    })
-                                        .catch((error) => {
-                                        if(page !== 0){
-
-                                        this.setState({
-                                        isLoadingTail : false
-                                    })
-                                    }else{
-                                        this.setState({
-                                        isRefreshing : false
-                                    })
-                                    }
-                                        console.log('error1 ' + error)
-
-                                    })
+        
+      })
+                                          .catch((error) => {
+        if (page !== 0) {
+          this.setState({
+            isLoadingTail: false
+          })
+        }
+        else {
+          this.setState({
+            isRefreshing: false
+          })
+        }
+      })
 
                                     },
 
-                                        _hasMore(){
-                                        return cachedResults.items.length !== cachedResults.total
+                                       _hasMore() {
+    return cachedResults.items.length !== cachedResults.total
+  },
 
-                                    },
 
-                                        _fetchMoreData(){
-                                        if(!this._hasMore() || this.state.isLoadingTail){
-                                        console.log('return123')
-                                        return
-                                    }
-                                        var page = cachedResults.nextPage
-                                        this._fatchData(page)
+                                        _fetchMoreData() {
+    if (!this._hasMore() || this.state.isLoadingTail) {
 
-                                    },
-                                        _onRefresh(){
-                                        if(!this._hasMore() || this.state.isRefreshing){
-                                        console.log('return')
-                                        console.log(this.state.isRefreshing)
-                                        console.log(this._hasMore())
+      this.setState({
+        isLoadingTail: false
+      })
 
-                                        return
-                                    }
-                                        this.setState({
-                                        isRefreshing:true
-                                    })
-                                        this._fatchData(0)
+      return
+    }
 
-                                    },
+    var page = cachedResults.nextPage
+
+    this._fetchData(page)
+  },
+                                        _onRefresh() {
+    if (!this._hasMore() || this.state.isRefreshing) {
+      return
+    }
+
+    this._fatchData(0)
+  },
                                         _renderFooter(){
                                         if(!this._hasMore() && cachedResults.total !== 0){
                                         return(
@@ -342,49 +282,34 @@ var Item = React.createClass({
                                         return  <ActivityIndicator style={styles.loadingMore} />
 
                                     },
-                                        render: function () {
-                                        return (
-                                        < View
-                                        style = {styles.container
-                                        }>
-                                        <
-                                        View
-                                        style = {styles.header
-                                        }>
-                                        <
-                                        Text
-                                        style = {styles.headerTitle
-                                        }>
-                                        列表页面 < / Text >
-                                        < / View >
-                                        < ListView
-                                        dataSource = {
-                                            this.state.dataSource
-                                        }
-                                        renderRow = {
-                                            this._renderRow
-                                        }
-                                        onEndReachedThreshold={20}
-                                        onEndReached={this._fetchMoreData}
-                                        enableEmptySections = {true}
-                                        refreshControl={
-                                            <RefreshControl
-                                                refreshing={this.state.isRefreshing}
-                                                onRefresh={this._onRefresh}
-                                                tintColor="#ff6600"
-                                                title='拼命加载中。。。'
-
-                                            />
-                                        }
-                                        automaticallyAdjustContentInsets = {false}
-                                        renderFooter={this._renderFooter}
-                                        showsVerticalScrollIndicator = {false}
-
-                                        / >
-                                        < / View >
-                                        )
-                                        }
-                                        })
+                                       render() {
+    return (
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <Text style={styles.headerTitle}>列表页面</Text>
+        </View>
+        <ListView
+          dataSource={this.state.dataSource}
+          renderRow={this._renderRow}
+          renderFooter={this._renderFooter}
+          onEndReached={this._fetchMoreData}
+          refreshControl={
+            <RefreshControl
+              refreshing={this.state.isRefreshing}
+              onRefresh={this._onRefresh}
+              tintColor='#ff6600'
+              title='拼命加载中...'
+            />
+          }
+          onEndReachedThreshold={20}
+          enableEmptySections={true}
+          showsVerticalScrollIndicator={false}
+          automaticallyAdjustContentInsets={false}
+        />
+      </View>
+    )
+  }
+})
 
                                         var styles = StyleSheet.create({
                                         container: {
