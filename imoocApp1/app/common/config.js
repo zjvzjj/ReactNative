@@ -12,11 +12,11 @@ module.exports = {
     api: {
         base: 'http://rap.taobao.org/mockjs/9834/',
         creations: 'api/creations',
-                up: 'api/up',
-   
+        up: 'api/up',
+
 
     },
-    BD:{
+    BD: {
         base: 'http://test.bd.app.bestdo.com/2.5.2/',
         creations: 'version/iosVersion?version=2.5.1',
         clubIndex: 'clubservice/clubIndex'
