@@ -77,328 +77,330 @@ var Item = React.createClass({
                 console.log('err')
             })
     },
-    
-  render() {
-    var row = this.state.row
 
-    return (
-      <TouchableHighlight onPress={this.props.onSelect}>
-        <View style={styles.item}>
-          <Text style={styles.title}>{row.title}</Text>
-          <Image
-            // source={}
-            style={styles.thumb}
-          >
-            <Icon
-              name='ios-play'
-              size={28}
-              style={styles.play} />
-          </Image>
-          <View style={styles.itemFooter}>
-            <View style={styles.handleBox}>
-              <Icon
-                name={this.state.up ? 'ios-heart' : 'ios-heart-outline'}
-                size={28}
-                onPress={this._up}
-                style={[styles.up, this.state.up ? null : styles.down]} />
-              <Text style={styles.handleText} onPress={this._up}>喜欢</Text>
-            </View>
-            <View style={styles.handleBox}>
-              <Icon
-                name='ios-chatboxes-outline'
-                size={28}
-                style={styles.commentIcon} />
-              <Text style={styles.handleText}>评论</Text>
-            </View>
-          </View>
-        </View>
-      </TouchableHighlight>
-    )
-  }
+    render() {
+        var row = this.state.row
+
+        return (
+            <TouchableHighlight onPress={this.props.onSelect}>
+                <View style={styles.item}>
+                    <Text style={styles.title}>{row.title}</Text>
+                    <Image
+                        source={{uri:row.thumb}}
+                        style={styles.thumb}
+                    >
+                        <Icon
+                            name='ios-play'
+                            size={28}
+                            style={styles.play}/>
+                    </Image>
+                    <View style={styles.itemFooter}>
+                        <View style={styles.handleBox}>
+                            <Icon
+                                name={this.state.up ? 'ios-heart' : 'ios-heart-outline'}
+                                size={28}
+                                onPress={this._up}
+                                style={[styles.up, this.state.up ? null : styles.down]}/>
+                            <Text style={styles.handleText} onPress={this._up}>喜欢</Text>
+                        </View>
+                        <View style={styles.handleBox}>
+                            <Icon
+                                name='ios-chatboxes-outline'
+                                size={28}
+                                style={styles.commentIcon}/>
+                            <Text style={styles.handleText}>评论</Text>
+                        </View>
+                    </View>
+                </View>
+            </TouchableHighlight>
+        )
+    }
 })
-                                        var List = React.createClass({
+var List = React.createClass({
 
-                                        getInitialState() {
-                                        var ds = new ListView.DataSource({
-                                        rowHasChanged: (r1, r2) => r1 !== r2
-                                    })
-                                        ;
+    getInitialState() {
+        var ds = new ListView.DataSource({
+                rowHasChanged: (r1, r2) => r1 !== r2
+            })
+            ;
 
-                                        return {
-                                        isRefreshing:false,
-                                        isLoadingTail:false,
-                                        dataSource: ds.cloneWithRows([]),
-                                    }
-                                    },
+        return {
+            isRefreshing: false,
+            isLoadingTail: false,
+            dataSource: ds.cloneWithRows([]),
+        }
+    },
 
-                                        _renderRow: function (row) {
+    _renderRow: function (row) {
+         console.log(row.title)
+        return <Item key={row._id} row={row}/>
 
-                                        return <Item key={row._id} row = {row} />
+    },
+    componentDidMount() {
+        var that = this
 
-                                    },
- componentDidMount() {
-    var that = this
+        that._fatchData(1)
+    },
 
-   that._fatchData(1)
-  },
+    _testData: function () {
+        request.post(config.BD.base + config.BD.clubIndex, {
+            uid: '530160901140737z55'
+        })
+            .then((data) => {
+                {/*console.log(data.data.description)*/
+                }
+                {/*console.log(config.BD.base + config.BD.creations)*/
+                }
+                {/*console.log(data.data)*/
+                }
+                {/*console.log("fetch request ", data.data.clubMenu[0].thumb);*/
+                }
+                data.json().then(function (json) {
+                    console.info(json);
 
-                                        _testData: function (){
-                                        request.post(config.BD.base + config.BD.clubIndex, {
-                                        uid: '530160901140737z55'
-                                    })
-                                        .then((data) => {
-                                    {/*console.log(data.data.description)*/
-                                    }
-                                    {/*console.log(config.BD.base + config.BD.creations)*/}
-                                    {/*console.log(data.data)*/
-                                    }
-                                    {/*console.log("fetch request ", data.data.clubMenu[0].thumb);*/}
-                                        data.json().then(function (json) {
-                                        console.info(json);
+                    var str = json.data.description
+                    var _ds = JSON.parse(JSON.stringify(data));
+                    console.log('113' + _ds)
 
-                                        var str = json.data.description
-                                        var _ds = JSON.parse(JSON.stringify(data));
-                                        console.log('113' + _ds)
+                    console.log('11' + str)
+                    var str1 = str.replace(/"([^"]|;)"/ig, "\n")
+                    console.log('22' + str1)
+                    Alert.alert(
+                        '有版本更新',
 
-                                        console.log('11' + str)
-                                        var str1 = str.replace(/"([^"]|;)"/ig, "\n")
-                                        console.log('22' + str1)
-                                        Alert.alert(
-                                        '有版本更新',
+                        json.data.description,
+                        [
+                            {text: '取消', onPress: () => console.log('Cancel Pressed!')},
+                            {text: '确定', onPress: () => console.log('OK Pressed!')},
+                        ]
+                    )
+                });
+            })
+    },
+    _fatchData(page) {
+        var that = this
 
-                                        json.data.description,
-                                        [
-                                    {text: '取消', onPress: () => console.log('Cancel Pressed!')},
-                                    {text: '确定', onPress: () => console.log('OK Pressed!')},
-                                        ]
-                                        )
-                                    });
-                                    })
-                                    },
-                                        _fatchData(page) {
-                                        var that = this
-
-    if (page !== 0) {
-      this.setState({
-        isLoadingTail: true
-      })
-    }
-    else {
-      this.setState({
-        isRefreshing: true
-      })
-    }
-
-                                    
-    request.get(config.api.base + config.api.creations, {
-      accessToken: 32,
-      page: page
-    })
-
-
-                                        .then((data) => {
-        if (data && data.success) {
-         
-
-            var items = cachedResults.items.slice()
-
-            if (page !== 0) {
-              items = items.concat(data.data)
-              cachedResults.nextPage += 1
-            }
-            else {
-              items = data.data.concat(items)
-            }
-
-            cachedResults.items = items
-            cachedResults.total = data.total
-
-            if (page !== 0) {
-              that.setState({
-                isLoadingTail: false,
-                dataSource: that.state.dataSource.cloneWithRows(cachedResults.items)
-              })
-            }
-            else {
-              that.setState({
-                isRefreshing: false,
-                dataSource: that.state.dataSource.cloneWithRows(cachedResults.items)
-              })
-            }
-          }
-
-        
-      })
-                                          .catch((error) => {
         if (page !== 0) {
-          this.setState({
-            isLoadingTail: false
-          })
+            this.setState({
+                isLoadingTail: true
+            })
         }
         else {
-          this.setState({
-            isRefreshing: false
-          })
+            this.setState({
+                isRefreshing: true
+            })
         }
-      })
-
-                                    },
-
-                                       _hasMore() {
-    return cachedResults.items.length !== cachedResults.total
-  },
 
 
-                                        _fetchMoreData() {
-    if (!this._hasMore() || this.state.isLoadingTail) {
+        request.get(config.api.base + config.api.creations, {
+            accessToken: 32,
+            page: page
+        })
 
-      this.setState({
-        isLoadingTail: false
-      })
 
-      return
+            .then((data) => {
+                if (data && data.success) {
+
+
+                    var items = cachedResults.items.slice()
+
+                    if (page !== 0) {
+                        items = items.concat(data.data)
+                        cachedResults.nextPage += 1
+                    }
+                    else {
+                        items = data.data.concat(items)
+                    }
+
+                    cachedResults.items = items
+                    cachedResults.total = data.total
+
+                    if (page !== 0) {
+                        that.setState({
+                            isLoadingTail: false,
+                            dataSource: that.state.dataSource.cloneWithRows(cachedResults.items)
+                        })
+                    }
+                    else {
+                        that.setState({
+                            isRefreshing: false,
+                            dataSource: that.state.dataSource.cloneWithRows(cachedResults.items)
+                        })
+                    }
+                }
+
+
+            })
+            .catch((error) => {
+                if (page !== 0) {
+                    this.setState({
+                        isLoadingTail: false
+                    })
+                }
+                else {
+                    this.setState({
+                        isRefreshing: false
+                    })
+                }
+            })
+
+    },
+
+    _hasMore() {
+        return cachedResults.items.length !== cachedResults.total
+    },
+
+
+    _fetchMoreData() {
+        if (!this._hasMore() || this.state.isLoadingTail) {
+
+            this.setState({
+                isLoadingTail: false
+            })
+
+            return
+        }
+
+        var page = cachedResults.nextPage
+
+        this._fetchData(page)
+    },
+    _onRefresh() {
+        if (!this._hasMore() || this.state.isRefreshing) {
+            return
+        }
+
+        this._fatchData(0)
+    },
+    _renderFooter(){
+        if (!this._hasMore() && cachedResults.total !== 0) {
+            return (
+                <View style={styles.loadingMore}><Text style={styles.loadingText}>没有更多了</Text></View>
+            )
+        }
+        if (!this.state.isLoadingTail) {
+            return <View style={styles.loadingMore}/>
+        }
+        return <ActivityIndicator style={styles.loadingMore}/>
+
+    },
+    render() {
+        return (
+            <View style={styles.container}>
+                <View style={styles.header}>
+                    <Text style={styles.headerTitle}>列表页面</Text>
+                </View>
+                <ListView
+                    dataSource={this.state.dataSource}
+                    renderRow={this._renderRow}
+                    renderFooter={this._renderFooter}
+                    onEndReached={this._fetchMoreData}
+                    refreshControl={
+                        <RefreshControl
+                            refreshing={this.state.isRefreshing}
+                            onRefresh={this._onRefresh}
+                            tintColor='#ff6600'
+                            title='拼命加载中...'
+                        />
+                    }
+                    onEndReachedThreshold={20}
+                    enableEmptySections={true}
+                    showsVerticalScrollIndicator={false}
+                    automaticallyAdjustContentInsets={false}
+                />
+            </View>
+        )
     }
-
-    var page = cachedResults.nextPage
-
-    this._fetchData(page)
-  },
-                                        _onRefresh() {
-    if (!this._hasMore() || this.state.isRefreshing) {
-      return
-    }
-
-    this._fatchData(0)
-  },
-                                        _renderFooter(){
-                                        if(!this._hasMore() && cachedResults.total !== 0){
-                                        return(
-                                        <View style = {styles.loadingMore}><Text style = {styles.loadingText}>没有更多了</Text></View>
-                                        )
-                                    }
-                                        if(!this.state.isLoadingTail){
-                                        return <View style = {styles.loadingMore}  />
-                                    }
-                                        return  <ActivityIndicator style={styles.loadingMore} />
-
-                                    },
-                                       render() {
-    return (
-      <View style={styles.container}>
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>列表页面</Text>
-        </View>
-        <ListView
-          dataSource={this.state.dataSource}
-          renderRow={this._renderRow}
-          renderFooter={this._renderFooter}
-          onEndReached={this._fetchMoreData}
-          refreshControl={
-            <RefreshControl
-              refreshing={this.state.isRefreshing}
-              onRefresh={this._onRefresh}
-              tintColor='#ff6600'
-              title='拼命加载中...'
-            />
-          }
-          onEndReachedThreshold={20}
-          enableEmptySections={true}
-          showsVerticalScrollIndicator={false}
-          automaticallyAdjustContentInsets={false}
-        />
-      </View>
-    )
-  }
 })
 
-                                        var styles = StyleSheet.create({
-                                        container: {
-                                        flex: 1,
-                                        backgroundColor: '#F5FCFF',
-                                    },
-                                        header: {
-                                        paddingTop: 25,
-                                        paddingBottom: 12,
-                                        backgroundColor: '#ee735c'
-                                    },
-                                        headerTitle: {
-                                        color: '#fff',
-                                        fontWeight: '600',
-                                        textAlign: 'center',
-                                        fontSize: 16
-                                    },
-                                        item: {
-                                        width: width,
-                                        marginBottom: 10,
-                                        backgroundColor: '#fff'
+var styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        backgroundColor: '#F5FCFF',
+    },
+    header: {
+        paddingTop: 25,
+        paddingBottom: 12,
+        backgroundColor: '#ee735c'
+    },
+    headerTitle: {
+        color: '#fff',
+        fontWeight: '600',
+        textAlign: 'center',
+        fontSize: 16
+    },
+    item: {
+        width: width,
+        marginBottom: 10,
+        backgroundColor: '#fff'
 
-                                    },
-                                        thumb: {
-                                        width: width,
-                                        height: width * 0.56,
-                                        resizeMode: 'cover'
+    },
+    thumb: {
+        width: width,
+        height: width * 0.56,
+        resizeMode: 'cover'
 
-                                    },
-                                        title: {
-                                        padding: 10,
-                                        fontSize: 18,
-                                        color: '#333'
-                                    },
+    },
+    title: {
+        padding: 10,
+        fontSize: 18,
+        color: '#333'
+    },
 
-                                        itemFooter: {
-                                        flexDirection: 'row',
-                                        justifyContent: 'space-between',
-                                        backgroundColor: '#eee'
-                                    },
+    itemFooter: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        backgroundColor: '#eee'
+    },
 
-                                        handleBox: {
-                                        padding: 10,
-                                        flexDirection: 'row',
-                                        width: width / 2 - 0.5,
-                                        justifyContent: 'center',
-                                        backgroundColor: '#fff'
-                                    },
+    handleBox: {
+        padding: 10,
+        flexDirection: 'row',
+        width: width / 2 - 0.5,
+        justifyContent: 'center',
+        backgroundColor: '#fff'
+    },
 
-                                        play: {
-                                        position: 'absolute',
-                                        bottom: 14,
-                                        right: 14,
-                                        width: 46,
-                                        height: 46,
-                                        paddingTop: 9,
-                                        paddingLeft: 18,
-                                        backgroundColor: 'transparent',
-                                        borderColor: '#fff',
-                                        borderWidth: 1,
-                                        borderRadius: 23,
-                                        color: '#ed7b66'
-                                    },
-                                        handleText: {
-                                        paddingLeft: 12,
-                                        fontSize: 18,
-                                        color: '#333'
-                                    },
-                                        up: {
-                                        fontSize: 22,
-                                        color: '#ed7b66',
-                                    },
-                                        down: {
-                                        fontSize: 22,
-                                        color: '#333',
-                                    },
-                                        commentIcon: {
-                                        fontSize: 22,
-                                        color: '#333'
-                                    },
-                                        loadingMore:{
-                                        marginVertical: 20
+    play: {
+        position: 'absolute',
+        bottom: 14,
+        right: 14,
+        width: 46,
+        height: 46,
+        paddingTop: 9,
+        paddingLeft: 18,
+        backgroundColor: 'transparent',
+        borderColor: '#fff',
+        borderWidth: 1,
+        borderRadius: 23,
+        color: '#ed7b66'
+    },
+    handleText: {
+        paddingLeft: 12,
+        fontSize: 18,
+        color: '#333'
+    },
+    up: {
+        fontSize: 22,
+        color: '#ed7b66',
+    },
+    down: {
+        fontSize: 22,
+        color: '#333',
+    },
+    commentIcon: {
+        fontSize: 22,
+        color: '#333'
+    },
+    loadingMore: {
+        marginVertical: 20
 
-                                    },
-                                        loadingText:{
-                                        color: '#777',
-                                        textAlign: 'center'
-                                    }
-                                    })
+    },
+    loadingText: {
+        color: '#777',
+        textAlign: 'center'
+    }
+})
 
 
-                                        module.exports = List
+module.exports = List
