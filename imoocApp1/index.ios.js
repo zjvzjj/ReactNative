@@ -19,6 +19,7 @@ import {
     Text,
     View,
     TabBarIOS,
+    Navigator
 
 } from 'react-native'
 
@@ -72,7 +73,20 @@ render: function () {
                         selectedTab: 'list',
                     });
                 }}>
-                <List />
+                <Navigator
+                initialRoute = {{
+                    name: 'list',
+                    component: List
+                }}
+                configureScene = {(route) => {
+                    return Navigator.SceneConfigs.FloatFromRight
+                }}
+                renderScene={(route,navigator) => {
+                    var Component = route.component
+
+                    return <Component {...route.params} navigator={navigator} />
+                }}
+              />
             </Icon.TabBarItem>
             <Icon.TabBarItem
                 iconName='ios-recording-outline'

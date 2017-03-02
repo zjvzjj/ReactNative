@@ -12,6 +12,7 @@ import Dimensions from 'Dimensions'
 import Icon from 'react-native-vector-icons/Ionicons'
 var request = require('../common/request')
 var config = require('../common/config')
+var Detail = require('../creation/detail')
 
 import {
 
@@ -133,8 +134,10 @@ var List = React.createClass({
 
     _renderRow: function (row) {
          console.log(row.title)
-        return <Item key={row._id} row={row}/>
-
+        return <Item 
+          key={row._id} 
+          onSelect = {() => this._loadPage(row)} 
+          row={row}/>
     },
     componentDidMount() {
         var that = this
@@ -284,6 +287,17 @@ var List = React.createClass({
         return <ActivityIndicator style={styles.loadingMore}/>
 
     },
+
+    _loadPage(row){
+        this.props.navigator.push({
+            name: 'detail',
+            component: Detail,
+            params:{
+                data: row
+            }
+        })
+    },
+
     render() {
         return (
             <View style={styles.container}>

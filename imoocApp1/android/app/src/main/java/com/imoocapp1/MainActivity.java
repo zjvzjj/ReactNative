@@ -1,6 +1,7 @@
 package com.imoocapp1;
 
 import com.facebook.react.ReactActivity;
+import com.brentvatne.react.ReactVideoPackage;
 import com.smixx.reactnativeicons.ReactNativeIcons;
 import com.oblador.vectoricons.VectorIconsPackage;
 
