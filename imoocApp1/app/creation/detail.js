@@ -15,7 +15,8 @@ import {
   StyleSheet,
   Text,
   View,
-  ActivityIndicator
+  ActivityIndicator,
+  TouchableOpacity
   
 
 } from 'react-native' 
@@ -34,6 +35,8 @@ var Detail = React.createClass( {
     console.log('loads')
     }, 
   _onProgress(data){ 
+        console.log('_onProgress')
+
     if(!this.state.videoLoaded){
       this.setState({
         videoLoaded: true
@@ -59,6 +62,7 @@ var Detail = React.createClass( {
 
     }
     this.setState(newState)
+        console.log(percent)
 
     },
 
@@ -67,8 +71,7 @@ var Detail = React.createClass( {
   this.setState({
       videoProgress: 1,
       playing:false
-
-    })
+          })
 
       },
 
@@ -93,18 +96,35 @@ var Detail = React.createClass( {
     videoProgress:0.01,
     videoTotal:0,
     currentTime:0,
-    playing :false
+    videoLoaded: false,
+    playing :false,
+    paused:false
 
   }
  },
  _rePlay(){
   this.refs.videoPlayer.seek(0)
  },
+ _pause(){
+ if(!this.state.paused){
+    this.setState({
+  paused:true
+})
+  }
+ },
+ _resume(){
+  if(this.state.paused){
+    this.setState({
+  paused:false
+})
+  }
+ },
  render: function() {
  
         var data = this.props.data
-        console.log(data)
-
+        console.log('render' + data)
+console.log('this.state.videoLoaded' + this.state.videoLoaded)
+console.log('this.state.playing' + this.state.playing)
     return (
 
       <View style = {styles.container}>
@@ -115,7 +135,7 @@ var Detail = React.createClass( {
       source={{uri: data.video}}
       style = {styles.video}
       volume = {5}
-      paused = {false}
+      paused = {this.state.paused}
       rate={this.state.rate}
       muted={this.state.muted}
       resizeMode = {this.state.resizeMode}
@@ -132,8 +152,7 @@ var Detail = React.createClass( {
       }
       {
 
-// console.log('this.state.videoLoaded' + this.state.videoLoaded)
-// console.log('this.state.playing' + this.state.playing)
+
 
         this.state.videoLoaded && !this.state.playing ?
         <Icon onPress = {this._rePlay}
@@ -142,6 +161,19 @@ var Detail = React.createClass( {
         size={48}/>
 
          : null
+      }
+      {
+        this.state.videoLoaded  && this.state.playing ?
+        <TouchableOpacity onPress= {this._pause} style = {styles.pauseBtn}>
+        {
+          this.state.paused ?  
+
+          <Icon onPress = {this._resume}
+             name = 'ios-play'
+             style = {styles.resumeIcon} 
+             size={48}/> : <Text> </Text>
+        }
+        </TouchableOpacity> : null
       }
 
       <View style = {styles.progressBox}>
@@ -204,6 +236,25 @@ var styles = StyleSheet.create({
         borderWidth: 1,
         borderRadius: 30,
         color: '#ed7b66'
+  },
+  pauseBtn:{
+    width: width,
+    height: 360,
+    position :'absolute',
+    left:0,
+    top:0
+  },
+  resumeIcon:{
+      width: 60,
+        height: 60,
+        paddingTop: 8,
+        paddingLeft: 22,
+        backgroundColor: 'transparent',
+        borderColor: '#fff',
+        borderWidth: 1,
+        borderRadius: 30,
+        color: '#ed7b66',
+        alignSelf: 'center'
   }
 });
 
