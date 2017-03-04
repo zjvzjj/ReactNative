@@ -28,43 +28,43 @@ var Detail = React.createClass( {
  _backToList(){
   this.props.navigator.pop()
  },
-  _onLoadStart(){ 
+  _onLoadStart() {
     console.log('load start')
-    },      
-  _onLoad(){ 
-    console.log('loads')
-    }, 
-  _onProgress(data){ 
-        console.log('_onProgress')
+  },
 
-    if(!this.state.videoLoaded){
+  _onLoad() {
+    console.log('loads')
+  },
+
+  _onProgress(data,e) {
+
+    if (!this.state.videoLoaded) {
       this.setState({
         videoLoaded: true
       })
     }
 
-    var  duration = data.playableDuration
-    var  currentTime = data.currentTime
-    var percent = Number((currentTime/duration).toFixed(2))
+
+    var duration = data.playableDuration
+        console.log(duration)
+
+    var currentTime = data.currentTime
+    var percent = Number((currentTime / duration).toFixed(2))
     var newState = {
-       videoTotal : duration,
+      videoTotal: duration,
       currentTime: Number(data.currentTime.toFixed(2)),
       videoProgress: percent
-
     }
 
-    if(!this.state.videoLoaded){
+    if (!this.state.videoLoaded) {
       newState.videoLoaded = true
-
     }
-    if(!this.state.playing){
+    if (!this.state.playing) {
       newState.playing = true
-
     }
-    this.setState(newState)
-        console.log(percent)
 
-    },
+    this.setState(newState)
+  },
 
   _onEnd(){ 
     console.log('end')
@@ -74,14 +74,11 @@ var Detail = React.createClass( {
           })
 
       },
-
-  _onError(e){ 
-        console.log(e)
-
-    console.log('error')
-
-
-      },
+_onError(e) {
+    this.setState({
+      videoOk: false
+    })
+  },
 
   getInitialState(){ 
 
@@ -98,7 +95,9 @@ var Detail = React.createClass( {
     currentTime:0,
     videoLoaded: false,
     playing :false,
-    paused:false
+    paused:false,
+          videoOk: true,
+
 
   }
  },
@@ -148,37 +147,39 @@ console.log('this.state.playing' + this.state.playing)
       onError= {this._onError}
       />
       {
-        !this.state.videoLoaded && <ActivityIndicator color='#ee735c' style={styles.loading} />
-      }
-      {
+            !this.state.videoOk && <Text style={styles.failText}>视频出错了！很抱歉</Text>
+          }
 
+          {
+            !this.state.videoLoaded && <ActivityIndicator color='#ee735c' style={styles.loading} />
+          }
 
+          {
+            this.state.videoLoaded && !this.state.playing
+            ? <Icon
+                onPress={this._rePlay}
+                name='ios-play'
+                size={48}
+                style={styles.playIcon} />
+            //: <Text></Text>
+            : null
+          }
 
-        this.state.videoLoaded && !this.state.playing ?
-        <Icon onPress = {this._rePlay}
-        name = 'ios-play'
-        style = {styles.playIcon} 
-        size={48}/>
-
-         : null
-      }
-      {
-        this.state.videoLoaded  && this.state.playing ?
-        <TouchableOpacity onPress= {this._pause} style = {styles.pauseBtn}>
-        {
-          this.state.paused ?  
-
-          <Icon onPress = {this._resume}
-             name = 'ios-play'
-             style = {styles.resumeIcon} 
-             size={48}/> : <Text> </Text>
-        }
-        </TouchableOpacity> : null
-      }
+          {
+            this.state.videoLoaded && this.state.playing
+            ? <TouchableOpacity onPress={this._pause} style={styles.pauseBtn}>
+              {
+                this.state.paused
+                ? <Icon onPress={this._resume} size={48} name='ios-play' style={styles.resumeIcon} />
+                : null
+              }
+            </TouchableOpacity>
+            : null
+          }
 
       <View style = {styles.progressBox}>
-<View style = {[styles.progressBar, {width: width * this.state.videoProgress}]}>
-</View>
+            <View style={[styles.progressBar, {width: width * this.state.videoProgress}]}></View>
+
       </View>
 
        </View>

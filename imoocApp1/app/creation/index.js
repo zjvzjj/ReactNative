@@ -266,7 +266,7 @@ var List = React.createClass({
 
         var page = cachedResults.nextPage
 
-        this._fetchData(page)
+        this._fatchData(page)
     },
     _onRefresh() {
         if (!this._hasMore() || this.state.isRefreshing) {
