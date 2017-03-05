@@ -1,4 +1,4 @@
-/**
+ /**
  * Sample React Native App
  * https://github.com/facebook/react-native
  * @flow
@@ -9,6 +9,8 @@ import React, { Component } from 'react'
 import Icon from 'react-native-vector-icons/Ionicons'
 import Video from 'react-native-video'
 import Dimensions from 'Dimensions'
+var config = require('../common/config')
+var request = require('../common/request')
 
 import {
   
@@ -16,7 +18,10 @@ import {
   Text,
   View,
   ActivityIndicator,
-  TouchableOpacity
+  TouchableOpacity,
+  ScrollView,
+  Image,
+  ListView
   
 
 } from 'react-native' 
@@ -25,7 +30,7 @@ var width = Dimensions.get('window').width
 
 
 var Detail = React.createClass( {
- _backToList(){
+ _pop(){
   this.props.navigator.pop()
  },
   _onLoadStart() {
@@ -81,6 +86,9 @@ _onError(e) {
   },
 
   getInitialState(){ 
+  var ds = new ListView.DataSource({
+                rowHasChanged: (r1, r2) => r1 !== r2
+            })
 
   var data = this.props.data
   return{
@@ -97,6 +105,7 @@ _onError(e) {
     playing :false,
     paused:false,
           videoOk: true,
+            dataSource: ds.cloneWithRows([]),
 
 
   }
@@ -118,15 +127,65 @@ _onError(e) {
 })
   }
  },
+
+ componentDidMount(){
+  this._fetchData()
+ },
+
+ _fetchData(){
+  var that = this
+  var url = config.api.base + config.api.comment
+
+  request.get(url, {
+    id : 124,
+    accessToken : '123a'
+  })
+  .then(function(data){
+    if(data && data.success){
+      var comments = data.data
+      if (comments && comments.length > 0) {
+        that.setState({
+          comments:comments,
+          dataSource:that.state.dataSource.cloneWithRows(comments)
+        })
+      }
+    }
+  })
+        .catch((error) => {
+          console.log(error)
+        })
+ },
+ _renderRow(row){
+
+  return(
+    <View key={row._id} style = {styles.replyBox}> 
+        <Image style = {styles.replyAvatar} source = {{uri : row.replyBy.acatar}} >
+       </Image>
+                    <View style = {styles.reply}>
+                   
+    <Text style = {styles.replyNickname}>{row.replyBy.nickname}</Text>
+       <Text style = {styles.replyContent}>{row.content}</Text>
+                    </View> 
+                    </View>
+    )
+ },
  render: function() {
  
         var data = this.props.data
-        console.log('render' + data)
+        console.log(data)
 console.log('this.state.videoLoaded' + this.state.videoLoaded)
 console.log('this.state.playing' + this.state.playing)
     return (
 
       <View style = {styles.container}>
+      <View style = {styles.header}>
+        <TouchableOpacity style = {styles.backBox} onPress = {this._pop}>
+          <Icon name = 'ios-arrow-back' style = {styles.backIcon} />
+          <Text style = {styles.backText}>返回</Text>
+
+        </TouchableOpacity>
+        <Text style= {styles.headerTitle} numberOflines = {1}>视频详情页</Text>
+      </View>
       <Text onPress = {this._backToList}>详情页面</Text>
       <View style = {styles.videoBox}> 
       <Video 
@@ -183,6 +242,30 @@ console.log('this.state.playing' + this.state.playing)
       </View>
 
        </View>
+       <ScrollView 
+                   enableEmptySections={true}
+                    showsVerticalScrollIndicator={false}
+                    automaticallyAdjustContentInsets={false}
+                    style = {styles.scrollView}>
+
+                    <View style = {styles.infoBox}>
+                     <Image style = {styles.avatar} source = {{uri : data.author.acatar}} >
+                    </Image>
+                    <View style = {styles.descBox}>
+                   
+                      <Text style = {styles.nickname}>{data.author.nickname}</Text>
+                      <Text style = {styles.title}>{data.title}</Text>
+                    </View> 
+                    </View>
+
+                    <ListView dataSource={this.state.dataSource}
+                    renderRow={this._renderRow}
+
+                    enableEmptySections={true}
+                    showsVerticalScrollIndicator={false}
+                    automaticallyAdjustContentInsets={false}
+                />
+       </ScrollView>
         </View>
         )}
 })
@@ -193,20 +276,57 @@ var styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F5FCFF',
   },
+  header:{
+    flexDirection : 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    width:width,
+    height:64,
+    paddingTop : 20,
+    paddingLeft : 10,
+    paddingRight: 10,
+    borderBottomWidth: 1,
+    borderColor:'rgba(0,0,0,0.1)',
+    backgroundColor:'#fff'
+
+  },
+  backBox:{
+    position:'absolute',
+    left:12,
+    top :32,
+    width:50,
+    flexDirection:'row',
+    alignItems:'center'
+
+  },
+  headerTitle:{
+    width:width - 120,
+    textAlign :'center'
+
+  },
+  backIcon:{
+    color:'#999',
+    fontSize:20,
+    marginRight:5
+
+  },
+  backText:{
+    color:'#999'
+  },
   videoBox:{
     width: width,
-    height: 360,
+    height: width * 0.56,
     backgroundColor: '#000'
   },
   video:{
     width:width,
-    height:360,
+    height:width * 0.56,
     backgroundColor: '#000'
   },
   loading:{
     position:'absolute',
     left:0,
-    top:140,
+    top:80,
     width:width,
     alignSelf:'center',
     backgroundColor:'transparent'
@@ -218,6 +338,15 @@ var styles = StyleSheet.create({
 
 
 
+  },
+  failText:{
+    position:'absolute',
+    left:0,
+    top:180,
+    width:width,
+    textAlign:'center',
+    color:'#fff',
+    backgroundColor:'transparent'
   },
   progressBar:{
     width:1,
@@ -247,6 +376,7 @@ var styles = StyleSheet.create({
   },
   resumeIcon:{
       width: 60,
+      top:90,
         height: 60,
         paddingTop: 8,
         paddingLeft: 22,
@@ -256,6 +386,55 @@ var styles = StyleSheet.create({
         borderRadius: 30,
         color: '#ed7b66',
         alignSelf: 'center'
+  },
+  infoBox:{
+    width:width,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginTop: 10,
+
+  },
+  avatar:{
+    width: 60,
+    height: 60,
+    marginRight: 10,
+    marginLeft: 10,
+    borderRadius: 30
+  },
+  descBox:{
+    flex:1
+  },
+  nickname:{
+    fontSize: 18
+  },
+  title:{
+    marginTop: 8,
+        marginRight: 5,
+    fontSize: 16,
+    color: '#666'
+  },
+  replyBox:{
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    marginTop: 10,
+
+  },
+  replyAvatar:{
+    width:40,
+    height:40,
+    marginLeft:10,
+    marginRight:10,
+    borderRadius:20
+  },
+  replyNickname:{
+    color:'#666'
+  },
+  replyContent:{
+    color:'#666',
+    marginTop:4
+  },
+  reply:{
+    flex:1
   }
 });
 
