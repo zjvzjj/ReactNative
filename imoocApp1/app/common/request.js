@@ -15,23 +15,26 @@ request.get = function (url, params) {
     return fetch(url)
         .then((response) => response.json()
         )
-         .then((response) => Mock.mock(response)
-         )
+         // .then((response) => Mock.mock(response)
+         // )
 
 }
 
 
 request.post = function (url, body) {
-    console.log(url)
-    console.log(body)
+
+    var queryString = Object.keys(body)
+    .map(key => key + '=' + encodeURIComponent(body[key]))
+    .join('.');
+    console.log(queryString)
+
     var options = _.extend(config.header, {
-        body: JSON.stringify(body)
+        body: queryString
     })
-    console.log('3332')
+
     return fetch(url, options)
-        console.log('333')
-        .then((response) => response.json()
-        )
+        // .then((response) => response.json()
+        // )
        // .then((response) => Mock.mock(response)
        //  )
 }

@@ -4,9 +4,9 @@ module.exports = {
     header: {
         method: 'POST',
         headers: {
-            // 'Accept': 'application/json',
+            'Accept': 'application/json',
             // 'Content-Type': 'application/json',
-            "Content-Type": "application/x-www-form-urlencoded"
+            'Content-Type': 'application/x-www-form-urlencoded'
         }
     },
     api: {

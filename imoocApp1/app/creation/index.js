@@ -63,7 +63,6 @@ var Item = React.createClass({
         request.post(url, body)
             .then(function (data) {
                 data.json().then(function (json) {
-                    console.log(json)
                     if (json && json.success) {
                         that.setState({
                             up: up
@@ -133,7 +132,6 @@ var List = React.createClass({
     },
 
     _renderRow: function (row) {
-         console.log(row.title)
         return <Item 
           key={row._id} 
           onSelect = {() => this._loadPage(row)} 
@@ -142,41 +140,77 @@ var List = React.createClass({
     componentDidMount() {
         var that = this
 
-        that._fatchData(1)
+        // that._fatchData(1)
+        that._testData()
     },
 
     _testData: function () {
-        request.post(config.BD.base + config.BD.clubIndex, {
-            uid: '530160901140737z55'
-        })
+
+        
+
+    //     // fetch('http://test.bd.app.bestdo.com/2.5.2/clubservice/clubIndex', {
+    // var fetchOptions = {
+    //     method: 'POST',
+    //     headers: {
+          // 'Accept': 'application/json',
+          // //表单
+          // 'Content-Type': 'application/x-www-form-urlencoded'
+    //     },
+    //     body:'uid='530160901140737z55'
+    //   };
+
+   //  fetch("http://test.bd.app.bestdo.com/2.5.2/clubservice/clubIndex", {  
+   //          method: "POST",  
+   //          headers: {  
+   //              'Accept': 'application/json',
+   //        //表单
+   //        'Content-Type': 'application/x-www-form-urlencoded'
+   //          },  
+   //          body: 'uid=530160901140737z55'  
+   //      }) .then((data) => {  
+   //          data.json().then(function (json) {
+   //              console.log("fetch request ",json);
+   //          })
+   //          .catch(function (e) {  
+   //          console.log("fetch fail");  
+   //          Alert.alert('提示','系统错误',[{text: '确定', onPress: () => console.log('OK Pressed!')},]);  
+   //      }); 
+              
+   // })
+    var body = {
+            uid: '530160901140737z55',
+            token:'lalal'
+        }
+     
+        request.post(config.BD.base + config.BD.clubIndex, body)
             .then((data) => {
-                {/*console.log(data.data.description)*/
-                }
-                {/*console.log(config.BD.base + config.BD.creations)*/
-                }
-                {/*console.log(data.data)*/
-                }
-                {/*console.log("fetch request ", data.data.clubMenu[0].thumb);*/
-                }
+                // console.log(data.data.description)
+                
+                // console.log(config.BD.base + config.BD.clubIndex)
+                
+                // console.log(data)
+                
+                // console.log("fetch request ", data.data.clubMenu[0].thumb);
+                
                 data.json().then(function (json) {
                     console.info(json);
 
-                    var str = json.data.description
-                    var _ds = JSON.parse(JSON.stringify(data));
-                    console.log('113' + _ds)
+                    // var str = json.data.description
+                    // var _ds = JSON.parse(JSON.stringify(data));
+                    // console.log('113' + _ds)
 
-                    console.log('11' + str)
-                    var str1 = str.replace(/"([^"]|;)"/ig, "\n")
-                    console.log('22' + str1)
-                    Alert.alert(
-                        '有版本更新',
+                    // console.log('11' + str)
+                    // var str1 = str.replace(/"([^"]|;)"/ig, "\n")
+                    // console.log('22' + str1)
+                    // Alert.alert(
+                    //     '有版本更新',
 
-                        json.data.description,
-                        [
-                            {text: '取消', onPress: () => console.log('Cancel Pressed!')},
-                            {text: '确定', onPress: () => console.log('OK Pressed!')},
-                        ]
-                    )
+                    //     json.data.description,
+                    //     [
+                    //         {text: '取消', onPress: () => console.log('Cancel Pressed!')},
+                    //         {text: '确定', onPress: () => console.log('OK Pressed!')},
+                    //     ]
+                    // )
                 });
             })
     },
