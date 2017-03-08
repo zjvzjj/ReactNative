@@ -8,6 +8,7 @@
 import React, { Component } from 'react'
 import Icon from 'react-native-vector-icons/Ionicons'
 import Video from 'react-native-video'
+import Button from 'react-native-button'
 import Dimensions from 'Dimensions'
 var config = require('../common/config')
 var request = require('../common/request')
@@ -21,13 +22,22 @@ import {
   TouchableOpacity,
   ScrollView,
   Image,
-  ListView
+  ListView,
+  TextInput,
+  Modal,
+  AlertIOS
+
   
 
 } from 'react-native' 
 
 var width = Dimensions.get('window').width
 
+var cachedResults = {
+    nextPage: 1,
+    items: [],
+    total: 0
+}
 
 var Detail = React.createClass( {
  _pop(){
@@ -106,6 +116,12 @@ _onError(e) {
     paused:false,
           videoOk: true,
             dataSource: ds.cloneWithRows([]),
+            // modal
+            animationType:'none',
+            modalVisible:false,
+            isSending:false,
+            content:''
+
 
 
   }
@@ -129,32 +145,89 @@ _onError(e) {
  },
 
  componentDidMount(){
-  this._fetchData()
+  this._fatchData()
  },
 
- _fetchData(){
-  var that = this
-  var url = config.api.base + config.api.comment
 
-  request.get(url, {
-    id : 124,
-    accessToken : '123a'
-  })
-  .then(function(data){
-    if(data && data.success){
-      var comments = data.data
-      if (comments && comments.length > 0) {
-        that.setState({
-          comments:comments,
-          dataSource:that.state.dataSource.cloneWithRows(comments)
+ _fatchData(page) {
+        var that = this
+
+        this.setState({
+                isLoadingTail: true
+            })
+
+        request.get(config.api.base + config.api.comment, {
+            accessToken: 32,
+            page: page,
+               creation : 124
         })
-      }
-    }
-  })
-        .catch((error) => {
-          console.log(error)
-        })
- },
+
+
+            .then((data) => {
+                if (data && data.success) {
+
+
+                    var items = cachedResults.items.slice()
+
+                        items = items.concat(data.data)
+                        cachedResults.nextPage += 1
+                   
+
+                    cachedResults.items = items
+                    cachedResults.total = data.total
+
+                        that.setState({
+                            isLoadingTail: false,
+                            dataSource: that.state.dataSource.cloneWithRows(cachedResults.items)
+                        })
+                  
+                }
+
+
+            })
+            .catch((error) => {
+                    this.setState({
+                        isLoadingTail: false
+                    })
+                
+            })
+
+    },
+
+    _hasMore() {
+        return cachedResults.items.length !== cachedResults.total
+    },
+
+
+    _fetchMoreData() {
+        if (!this._hasMore() || this.state.isLoadingTail) {
+
+            this.setState({
+                isLoadingTail: false
+            })
+
+            return
+        }
+
+        var page = cachedResults.nextPage
+
+        this._fatchData(page)
+    },
+  
+    _renderFooter(){
+        if (!this._hasMore() && cachedResults.total !== 0) {
+            return (
+                <View style={styles.loadingMore}><Text style={styles.loadingText}>没有更多了</Text></View>
+            )
+        }
+        if (!this.state.isLoadingTail) {
+            return <View style={styles.loadingMore}/>
+        }
+        return <ActivityIndicator style={styles.loadingMore}/>
+
+    },
+
+
  _renderRow(row){
 
   return(
@@ -169,7 +242,112 @@ _onError(e) {
                     </View>
     )
  },
- render: function() {
+
+ _focus(){
+  this._setModalVisible(true)
+ },
+ _setModalVisible(isVisible){
+  this.setState({
+    modalVisible:isVisible
+  })
+ },
+ _blur(){
+
+ },
+ _closeModal(){
+    this._setModalVisible(false)
+ },
+ _renderHeader(){
+       var data = this.state.data
+
+          return(
+          <View style = {styles.listHeader}>
+              <View style = {styles.infoBox}>
+               <Image style = {styles.avatar} source = {{uri : data.author.acatar}} >
+              </Image>
+              <View style = {styles.descBox}>
+             
+                <Text style = {styles.nickname}>{data.author.nickname}</Text>
+                <Text style = {styles.title}>{data.title}</Text>
+              </View> 
+              </View>
+          <View style = {styles.commentBox}>
+             <View style = {styles.comment}>
+             <TextInput
+             placeholder='好喜欢这个狗'
+             style = {styles.content}
+             multiline={true}
+             onFocus={this._focus}
+             />
+                  </View>
+                  </View>
+                  <View style = {styles.commentArea}>
+                  <Text style = {styles.commentTitle}>精彩评论</Text>
+                  </View>
+              </View>
+            )
+ },
+
+ _submit(){
+
+  var that = this
+  if(!this.state.content){
+    return AlertIOS.alert('留言不能为空!')
+  }
+
+   if(this.state.isSending){
+    return AlertIOS.alert('正在评论中!')
+  }
+
+  this.setState({
+    isSending:true
+  },function(){
+    var body = {
+      accessToken:'abc',
+      creation:'112233',
+      content:this.state.content
+    }
+
+    var url = config.api.base + config.api.comment
+
+    request.post(url,body)
+    .then(function(data) {
+      if(data && data.success){
+
+        var items = cachedResults.items.slice()
+        var content = that.state.content
+        items =[{
+          content:content,
+          replyBy:{
+            acatar:'http://dummyimage.com/150x150/3cea0d)',
+            nickname:'啦啦啦'
+          }
+        }].concat(items)
+
+        cachedResults.items = items
+        console.log(items)
+        cachedResults.total = cachedResults.total + 1
+        that.setState({
+          content:'',
+          isSending:false,
+          dataSource:that.state.dataSource.cloneWithRows(
+            cachedResults.items)
+        })
+        that._setModalVisible(false)
+      }
+    })
+    .catch((err) => {
+      console.log(err)
+      that.setState({
+        isSending:false
+      })
+      that._setModalVisible(false)
+      AlertIOS.alert('留言失败')
+    })
+  })
+
+ },
+ render: function() {       
  
         var data = this.props.data
         console.log(data)
@@ -193,7 +371,7 @@ console.log('this.state.playing' + this.state.playing)
       source={{uri: data.video}}
       style = {styles.video}
       volume = {5}
-      paused = {this.state.paused}
+        paused = {this.state.paused}
       rate={this.state.rate}
       muted={this.state.muted}
       resizeMode = {this.state.resizeMode}
@@ -242,30 +420,53 @@ console.log('this.state.playing' + this.state.playing)
       </View>
 
        </View>
-       <ScrollView 
-                   enableEmptySections={true}
-                    showsVerticalScrollIndicator={false}
-                    automaticallyAdjustContentInsets={false}
-                    style = {styles.scrollView}>
-
-                    <View style = {styles.infoBox}>
-                     <Image style = {styles.avatar} source = {{uri : data.author.acatar}} >
-                    </Image>
-                    <View style = {styles.descBox}>
-                   
-                      <Text style = {styles.nickname}>{data.author.nickname}</Text>
-                      <Text style = {styles.title}>{data.title}</Text>
-                    </View> 
-                    </View>
+      
 
                     <ListView dataSource={this.state.dataSource}
                     renderRow={this._renderRow}
+
+                    renderFooter={this._renderFooter}
+                    renderHeader={this._renderHeader}
+                    onEndReached={this._fetchMoreData}
+                  
+                    onEndReachedThreshold={20}
 
                     enableEmptySections={true}
                     showsVerticalScrollIndicator={false}
                     automaticallyAdjustContentInsets={false}
                 />
-       </ScrollView>
+
+                <Modal 
+                  animationType={'fade'}
+                  visible={this.state.modalVisible}
+                  onRequestClose={() => {this._setModalVisible(false)}}
+                >
+                <View style = {styles.modalContainer}>
+                      <Icon 
+                         onPress = {this._closeModal}
+                         name = 'ios-close-outline'
+                         style = {styles.closeIcon} 
+                      />
+           <View style = {styles.commentBox}>
+               <View style = {styles.comment}>
+                   <TextInput
+                   placeholder='好喜欢这个狗'
+                   style = {styles.content}
+                   multiline={true}
+              
+                   defaultValue={this.state.content}
+                   onChangeText={(text) => {
+                    this.setState({
+                      content:text
+                    })
+                   }}
+                   />
+               </View>
+            </View>
+            <Button style = {styles.submitBtn} onPress={this._submit}>评论</Button> 
+            </View>
+                </Modal>
+
         </View>
         )}
 })
@@ -275,6 +476,28 @@ var styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F5FCFF',
+  },
+  modalContainer:{
+    flex:1,
+    paddingTop:45,
+    backgroundColor:'#fff'
+  },
+  closeIcon:{
+    alignSelf:'center',
+    fontSize:30,
+    color:'#ee753c'
+  },
+  submitBtn:{
+    width:width-20,
+    padding:16,
+    marginTop:15,
+    marginLeft:10,
+    marginBottom:20,
+    borderWidth:1,
+    borderColor:'#ee735c',
+    borderRadius:4,
+    color:'#ee735c',
+    fontSize:18
   },
   header:{
     flexDirection : 'row',
@@ -435,7 +658,42 @@ var styles = StyleSheet.create({
   },
   reply:{
     flex:1
-  }
+  },
+    loadingMore: {
+        marginVertical: 20
+
+    },
+    loadingText: {
+        color: '#777',
+        textAlign: 'center'
+    },
+    commentBox:{
+      marginTop:10,
+      marginBottom:10,
+      padding:8,
+      width:width
+    },
+    content:{
+      paddingLeft:2,
+      color:'#333',
+      borderWidth:1,
+      borderColor:'#ddd',
+      borderRadius:4,
+      fontSize:14,
+      height:80
+    },
+    listHeader:{
+      marginTop:10,
+      width:width
+    },
+    commentArea:{
+      width:width,
+      paddingBottom:6,
+      paddingLeft:10,
+      paddingRight:10,
+      borderBottomWidth:1,
+      borderBottomColor:'#eee'
+    },
 });
 
 

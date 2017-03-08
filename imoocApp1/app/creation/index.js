@@ -140,8 +140,8 @@ var List = React.createClass({
     componentDidMount() {
         var that = this
 
-        // that._fatchData(1)
-        that._testData()
+         that._fatchData(1)
+       // that._testData()
     },
 
     _testData: function () {
